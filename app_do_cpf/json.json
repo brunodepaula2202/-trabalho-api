@@ -1,0 +1,56 @@
+{
+    "12345678901": {
+        "cpf": "12345678901",
+        "nome": "Jo\u00c3\u00a3o Silva",
+        "data_nascimento": "1990-01-01",
+        "email": "joao@example.com"
+    },
+    "98765432100": {
+        "cpf": "98765432100",
+        "nome": "Maria Oliveira",
+        "data_nascimento": "1985-05-05",
+        "email": "maria@example.com"
+    },
+    "13265498778": {
+        "cpf": "13265498778",
+        "nome": "alan ",
+        "data_nascimento": "24102003",
+        "email": "alan.bernabeu@gmail.com"
+    },
+    "11111111111": {
+        "cpf": "11111111111",
+        "nome": "jose bernabeu ",
+        "data_nascimento": "24/10/2003",
+        "email": "jose.bernabeu@gmail.com"
+    },
+    "22222222222": {
+        "cpf": "22222222222",
+        "nome": "wala nascimento",
+        "data_nascimento": "24/10/2003",
+        "email": "007350@libertas.edu.br"
+    },
+    "15485551696": {
+        "cpf": "15485551696",
+        "nome": "gustavo henrique carvalho",
+        "data_nascimento": "24/10/2003",
+        "email": "gustavo.henrique@gmail.com"
+    },
+    "88888888888": {
+        "cpf": "88888888888",
+        "nome": "gustavo henrique ",
+        "data_nascimento": "24/10/2003",
+        "email": "gustavo.carvalho@gmail.com"
+    },
+    "9999999999": {
+        "cpf": "9999999999",
+        "nome": "xgfg",
+        "data_nascimento": "24/10/2003",
+        "email": "sfs.hjfj@bkgk.com"
+    },
+    "11111111111111": {
+        "cpf": "11111111111111",
+        "nome": "111111111111111",
+        "data_nascimento": "11111111111111111111",
+        "email": "11111111111111111111111111@aaaaaa"
+    }
+}

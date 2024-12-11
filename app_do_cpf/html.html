@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busca de CPF</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+    <div class="nav">
+
+    </div>
+    <div class="container">
+        <header>
+            <h1>Consulta de CPF</h1>
+            <p>Digite o CPF para realizar a busca.</p>
+        </header>
+
+        <div class="form-container">
+            <form id="consultaForm">
+                <label for="cpf">CPF:</label>
+                <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" maxlength="14" required>
+                <button type="submit">Buscar</button>
+                <button onclick="window.location.href='sgf.html';">cadastrar CPF </button>
+            </form>
+        </div>
+
+        <div class="result">
+            <h2>Resultado da Busca</h2>
+            <p id="message">Digite um CPF válido para buscar as informações.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 - Sistema de Busca de CPF</p>
+    </footer>
+
+    <script src="javascript.js"></script>
+    <div class="barra">
+        
+    </div>
+</body>
+</html>

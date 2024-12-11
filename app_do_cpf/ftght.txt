@@ -1,0 +1,443 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import json
+
+# Ativando CORS para todas as rotas
+app = Flask("Minha API")
+CORS(app)  # ativa cors para todas rotas
+
+# Caminho do arquivo JSON
+JSON_FILE = "json.json"
+
+# Rota inicial
+@app.route("/")
+def home_page():
+    return "Hello World!"
+
+
+@app.route("/soma")
+def soma():
+    s = 0
+    for i in range(15):
+        s += i
+    return f"Resultado = {s}"
+
+
+@app.route("/multi", methods=["GET"])
+def mult():
+    nome = request.args.get("nome")
+    x = request.args.get("varx", type=float)
+    y = request.args.get("vary")  # y será string, vou precisar converter
+    y = float(y)
+    resultado = x * y
+    return f"Olá {nome}, o resultado = {resultado}"
+
+
+@app.route("/consulta", methods=["GET"])
+def consulta_cliente():
+    documento = request.args.get("doc")  # Obtém o CPF enviado na requisição GET
+    registro = dados(documento)  # Procura o CPF nos dados
+    return jsonify(registro)  # Retorna os dados do cliente ou uma mensagem de erro
+
+
+@app.route("/cadastro", methods=["POST"])
+def cadastrar():
+    # Pegando os dados do corpo da requisição
+    valores = request.get_json()
+
+    # Verificar se todos os campos necessários estão presentes
+    if not valores or 'cpf' not in valores or 'nome' not in valores or 'data_nascimento' not in valores or 'email' not in valores:
+        return jsonify({"message": "Dados incompletos. CPF, Nome, Data de Nascimento e Email são obrigatórios!"}), 400
+
+    cpf = valores['cpf']
+    salvar_dados(cpf, valores)  # Chama a função que salva os dados
+    
+    return jsonify({"message": f"Cadastro do CPF {cpf} realizado com sucesso!"}), 201
+
+
+# Função para carregar o arquivo JSON
+def carregar_arquivo():
+    caminho_arquivo = "json.json"
+    try:
+        with open(caminho_arquivo, "r") as arq:
+            return json.load(arq)
+    except FileNotFoundError:
+        return {}  # Retorna um dicionário vazio se o arquivo não existir
+
+def gravar_arquivo(dados):
+    caminho_arquivo = "json.json"
+    try:
+        with open(caminho_arquivo, "w") as arq:
+            json.dump(dados, arq, indent=4)  # Salva os dados no formato JSON com indentação
+    except Exception as e:
+        print("Erro ao salvar o arquivo:", e)
+
+
+
+# Função para salvar ou atualizar os dados no JSON
+def salvar_dados(cpf, registro):
+    dados_pessoas = carregar_arquivo()  # Carrega os dados existentes
+    dados_pessoas[cpf] = registro  # Adiciona ou atualiza o registro pelo CPF
+    gravar_arquivo(dados_pessoas)  # Salva os dados atualizados
+
+
+# Função para consultar dados pelo CPF
+def dados(cpf):
+    dados_pessoas = carregar_arquivo()
+
+    # Verifica se o CPF existe no "banco de dados"
+    if cpf in dados_pessoas:
+        return dados_pessoas[cpf]  # Retorna os dados do cliente como JSON
+    else:
+        return {"message": "Registro não encontrado"}
+
+
+# Rota para deletar um dado pelo CPF
+@app.route('/deletar', methods=['POST'])
+def deletar():
+    try:
+        # Receber o CPF do corpo da requisição
+        dados = request.get_json()
+        cpf_para_deletar = dados.get('cpf')  # Aqui pegamos o CPF a ser deletado
+
+        # Carregar os dados do arquivo JSON
+        dados_json = carregar_arquivo()
+
+        # Verificar se o CPF existe e remover do dicionário
+        if cpf_para_deletar in dados_json:
+            del dados_json[cpf_para_deletar]  # Deleta o CPF do dicionário
+            gravar_arquivo(dados_json)  # Grava os dados de volta no arquivo
+            return jsonify({'status': 'sucesso', 'message': 'CPF deletado com sucesso!'}), 200
+        else:
+            return jsonify({'status': 'erro', 'message': 'CPF não encontrado!'}), 404
+
+    except Exception as e:
+        return jsonify({'status': 'erro', 'message': str(e)}), 500
+
+
+html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de CPF</title>
+    <style>
+        /* Estilos do formulário, como você já havia feito */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            width: 50%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            text-align: center;
+            color: green;
+            font-weight: bold;
+        }
+
+        .voltar{
+            width: 10%;
+            padding: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .voltar:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Cadastro de CPF</h1>
+        
+        <!-- Formulário de Cadastro -->
+        <form id="cadastroForm">
+            <label for="cpf">CPF:</label>
+            <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" maxlength="14" required>
+            
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" placeholder="Digite o nome completo" required>
+            
+            <label for="data_nascimento">Data de Nascimento:</label>
+            <input type="text" id="data_nascimento" name="data_nascimento" placeholder="Digite a data de nascimento (dd/mm/yyyy)" required>
+            
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" placeholder="Digite o e-mail" required>
+            
+            <button type="submit">Cadastrar</button>    
+        </form>
+
+        <!-- Formulário para deletar CPF -->
+        <label for="cpfDeletar">Digite o CPF para deletar:</label>
+        <input type="text" id="cpfDeletar" placeholder="Digite o CPF para deletar" maxlength="14" required>
+        <button onclick="deletarDado()">Deletar CPF</button>
+
+        <button class="voltar" onclick="window.location.href='html.html';">Voltar</button>
+
+        <!-- Mensagem de sucesso ou erro -->
+        <p class="message" id="message"></p>
+        
+        <script src="javascript.js"></script>
+    </div>
+
+    <script>
+        // Evento para o envio do formulário de cadastro
+        document.getElementById('cadastroForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Previne o envio padrão do formulário
+
+            const cpf = document.getElementById('cpf').value;
+            const nome = document.getElementById('nome').value;
+            const data_nascimento = document.getElementById('data_nascimento').value;
+            const email = document.getElementById('email').value;
+
+            // Verificação simples de dados
+            if (!cpf || !nome || !data_nascimento || !email) {
+                document.getElementById('message').textContent = 'Todos os campos são obrigatórios!';
+                document.getElementById('message').style.color = 'red';
+                return;
+            }
+
+            // Dados a serem enviados para o backend
+            const dadosCadastro = {
+                cpf: cpf,
+                nome: nome,
+                data_nascimento: data_nascimento,
+                email: email
+            };
+
+            // Enviando os dados via POST para o backend Flask
+            fetch('http://127.0.0.1:5000/cadastro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosCadastro) // Envia os dados como JSON
+            })
+            .then(response => response.json()) // Espera a resposta como JSON
+            .then(data => {
+                if (data.message) {
+                    document.getElementById('message').textContent = data.message;
+                    document.getElementById('message').style.color = 'green';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('message').textContent = 'Erro ao cadastrar CPF.';
+                document.getElementById('message').style.color = 'red';
+            });
+        });
+
+        // Função para deletar CPF
+        function deletarDado() {
+            const cpfDeletar = document.getElementById('cpfDeletar').value;
+
+            if (!cpfDeletar) {
+                document.getElementById('message').textContent = 'Digite um CPF para deletar!';
+                document.getElementById('message').style.color = 'red';
+                return;
+            }
+
+            // Enviar a requisição de deleção
+            fetch('http://127.0.0.1:5000/deletar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cpf: cpfDeletar }) // Envia o CPF para deletar
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = data.message;
+                document.getElementById('message').style.color = data.status === 'sucesso' ? 'green' : 'red';
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('message').textContent = 'Erro ao deletar CPF.';
+                document.getElementById('message').style.color = 'red';
+            });
+        }
+    </script>
+
+</body>
+</html>
+
+javascript
+// Função para buscar dados de um CPF na API Flask
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Impede o envio do formulário, para usar AJAX
+
+    const cpf = document.getElementById('cpf').value; // Pega o CPF do input
+
+    // Limpa a mensagem antes de exibir a nova
+    document.getElementById('message').textContent = '';
+
+    // Verifica se o CPF não está vazio
+    if (!cpf) {
+        document.getElementById('message').textContent = 'Digite um CPF válido!';
+        document.getElementById('message').style.color = 'red';
+        return; // Interrompe a execução se o CPF não for válido
+    }
+
+    // Realiza a requisição para a API Flask (rota /consulta)
+    fetch(`http://127.0.0.1:5000/consulta?doc=${cpf}`)
+        .then(response => {
+            // Verifica se a resposta foi bem-sucedida
+            if (!response.ok) {
+                throw new Error('Erro na requisição');
+            }
+            return response.json(); // Converte a resposta para JSON
+        })
+        .then(data => {
+            // Verifica se há uma mensagem de erro (registro não encontrado)
+            if (data.message) {
+                document.getElementById('message').textContent = data.message;
+                document.getElementById('message').style.color = 'red';
+            } else {
+                // Exibe os dados do cliente se encontrados
+                document.getElementById('message').textContent = `
+                    Nome: ${data.nome}, 
+                    Data de Nascimento: ${data.data_nascimento}, 
+                    E-mail: ${data.email}
+                `;
+                document.getElementById('message').style.color = 'green';
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            document.getElementById('message').textContent = 'Erro ao buscar CPF.';
+            document.getElementById('message').style.color = 'red';
+        });
+});
+
+// Função para deletar CPF
+function deletarDado() {
+    const cpfDeletar = document.getElementById('cpfDeletar').value;
+
+    if (!cpfDeletar) {
+        document.getElementById('message').textContent = 'Digite um CPF para deletar!';
+        document.getElementById('message').style.color = 'red';
+        return;
+    }
+
+    // Enviar a requisição de deleção
+    fetch('http://127.0.0.1:5000/deletar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cpf: cpfDeletar }) // Envia o CPF para deletar
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('message').textContent = data.message;
+        document.getElementById('message').style.color = data.status === 'sucesso' ? 'green' : 'red';
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        document.getElementById('message').textContent = 'Erro ao deletar CPF.';
+        document.getElementById('message').style.color = 'red';
+    });
+}
+
+json.json
+{
+    "12345678901": {
+        "cpf": "12345678901",
+        "nome": "Jo\u00c3\u00a3o Silva",
+        "data_nascimento": "1990-01-01",
+        "email": "joao@example.com"
+    },
+    "98765432100": {
+        "cpf": "98765432100",
+        "nome": "Maria Oliveira",
+        "data_nascimento": "1985-05-05",
+        "email": "maria@example.com"
+    },
+    "13265498778": {
+        "cpf": "13265498778",
+        "nome": "alan ",
+        "data_nascimento": "24102003",
+        "email": "alan.bernabeu@gmail.com"
+    },
+    "11111111111": {
+        "cpf": "11111111111",
+        "nome": "jose bernabeu ",
+        "data_nascimento": "24/10/2003",
+        "email": "jose.bernabeu@gmail.com"
+    },
+    "22222222222": {
+        "cpf": "22222222222",
+        "nome": "wala nascimento",
+        "data_nascimento": "24/10/2003",
+        "email": "007350@libertas.edu.br"
+    },
+    "15485551696": {
+        "cpf": "15485551696",
+        "nome": "gustavo henrique carvalho",
+        "data_nascimento": "24/10/2003",
+        "email": "gustavo.henrique@gmail.com"
+    },
+    "88888888888": {
+        "cpf": "88888888888",
+        "nome": "gustavo henrique ",
+        "data_nascimento": "24/10/2003",
+        "email": "gustavo.carvalho@gmail.com"
+    },
+    "9999999999": {
+        "cpf": "9999999999",
+        "nome": "xgfg",
+        "data_nascimento": "24/10/2003",
+        "email": "sfs.hjfj@bkgk.com"
+    }
+}
